@@ -24,7 +24,7 @@ namespace BattleArena
         int currentScene;
         Character player;
         Character[] enemies;
-        private int currentEnemyIndex = 0;
+        private int currentEnemyIndex;
         private Character currentEnemy;
 
         /// <summary>
@@ -39,6 +39,9 @@ namespace BattleArena
         /// </summary>
         public void Start()
         {
+            currentScene = 0;
+            currentEnemyIndex = 0;
+
             
         }
 
@@ -47,7 +50,7 @@ namespace BattleArena
         /// </summary>
         public void Update()
         {
-            
+            DisplayCurrentScene();
         }
 
         /// <summary>
@@ -55,7 +58,8 @@ namespace BattleArena
         /// </summary>
         public void End()
         {
-            
+            Console.WriteLine("Goodbye!");
+            Console.ReadKey(true);
         }
 
         /// <summary>
@@ -110,7 +114,22 @@ namespace BattleArena
         /// </summary>
         void DisplayCurrentScene()
         {
-            
+            switch(currentScene)
+            {
+                case 0:
+                    DisplayMainMenu();
+                    break;
+                case 1:
+                    GetPlayerName();
+                    break;
+                case 2:
+                    Battle();
+                    CheckBattleResults();
+                    break;
+                case 3:
+                    DisplayMainMenu();
+                    break;
+            }
         }
 
         /// <summary>
@@ -118,7 +137,17 @@ namespace BattleArena
         /// </summary>
         void DisplayMainMenu()
         {
-            
+            int PlayAgain = GetInput("Play Again", "Yes", "No");
+            if(PlayAgain == 1)
+            {
+                currentScene = 0;
+                currentEnemyIndex = 0;
+                currentEnemy = enemies[currentEnemyIndex];
+            }
+            else
+            {
+                gameOver = true;
+            }   
         }
 
         /// <summary>
@@ -127,7 +156,15 @@ namespace BattleArena
         /// </summary>
         void GetPlayerName()
         {
-            
+            Console.WriteLine("What is your name");
+            Console.Write(">");
+            player.name = Console.ReadLine();
+            Console.Clear();
+            int correctName = GetInput("Are you sure you'd like to keep the name: " + player.name + "?", "Yes", "No");
+            if(correctName == 1)
+            {
+                currentScene++;
+            }
         }
 
         /// <summary>
@@ -136,7 +173,21 @@ namespace BattleArena
         /// </summary>
         public void CharacterSelection()
         {
-           
+           int CharacterClass = GetInput("Choose your class", "Wizard", "Knight");
+            if(CharacterClass == 1)
+            {
+                player.health;
+                player.attackPower;
+                player.defensePower;
+            }
+            else if (CharacterClass == 2)   
+            {
+                player.health;
+                player.attackPower;
+                player.defensePower;
+            }
+
+            currentScene++;
         }
 
         /// <summary>
@@ -145,6 +196,8 @@ namespace BattleArena
         /// <param name="character">The character that will have its stats shown</param>
         void DisplayStats(Character character)
         {
+            Console.WriteLine(character.name + "\nHP:" + character.health + "\nAttack:" + character.attackPower
+                + "\nDefense:" + character.defensePower);
 
         }
 
@@ -156,7 +209,11 @@ namespace BattleArena
         /// <returns>The amount of damage done to the defender</returns>
         float CalculateDamage(float attackPower, float defensePower)
         {
-            
+            float damage = attackPower - defensePower;
+            if(damage <= 0)
+                return 0;
+            else
+                return damage;
         }
 
         /// <summary>
@@ -167,7 +224,14 @@ namespace BattleArena
         /// <returns>The amount of damage done to the defender</returns>
         public float Attack(ref Character attacker, ref Character defender)
         {
-            
+            float dmgTaken = CalculateDamage(attacker.attackPower, defender.defensePower);
+            defender.health - dmgTaken;
+
+            if(defender.health <= 0)
+            {
+                defender.health == 0;
+            }
+            return dmgTaken;
         }
 
         /// <summary>
@@ -175,7 +239,27 @@ namespace BattleArena
         /// </summary>
         public void Battle()
         {
-            
+            int DamageDealt = 0;
+            DisplayStats(player);
+            DisplayStats(currentEnemy);
+            int Choice = GetInput("A " + currentEnemy + " Approaches you", "Attack", "Dodge");
+            if(Choice == 1)
+            {
+                DamageDealt = Attack(ref player, ref currentEnemy);
+                Console.WriteLine("You did " + DamageDealt + " damage");
+            }
+            else if (Choice == 2)
+            {
+                Console.WriteLine("You dodged the " + currentEnemy + "'s attack");
+                Console.ReadKey(true);
+                Console.Clear();
+                return;
+            }
+
+            DamageDealt = Attack(ref currentEnemy, ref player);
+            Console.WriteLine(currentEnemy.name + "dealt" + DamageDealt + " damage.");
+            Console.ReadKey(true);
+            Console.Clear();
         }
 
         /// <summary>
@@ -184,7 +268,24 @@ namespace BattleArena
         /// </summary>
         void CheckBattleResults()
         {
-            
+            if(player.health <= 0)
+            {
+                Console.WriteLine("You were slain");
+                Console.ReadKey(true);
+                Console.Clear();
+                currentScene = 3;
+            }
+            else if(currentEnemy.health <= 0)
+            {
+                Console.WriteLine("You slayed the " + currentEnemy.name);
+                if(currentEnemyIndex >= enemies.Length)
+                {
+                    currentScene = 3;
+                    return;
+                }
+
+                currentEnemy = enemies[currentEnemyIndex];
+            }
         }
     }
 }
