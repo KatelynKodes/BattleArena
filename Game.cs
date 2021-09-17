@@ -5,15 +5,23 @@ using System.Text;
 namespace BattleArena
 {
 
+    public struct Item
+    {
+        public string name;
+        public float StatBoost;
+    }
+
     //TEST COMMIT
     class Game
     {
         private bool _gameOver;
         private int _currentScene;
-        private Entity _player;
+        private Player _player;
         private Entity[] _enemies;
         private int _currentEnemyIndex;
         private Entity _currentEnemy;
+        private Item[] KnightItems;
+        private Item[] WizardItems;
 
         /// <summary>
         /// Function that starts the main game loop
@@ -22,20 +30,28 @@ namespace BattleArena
         {
         }
 
+        void initializeItems()
+        {
+            Item wand = new Item { name = "Wand", StatBoost = 20f};
+            Item Shield = new Item { name = "Shield", StatBoost = 15f};
+            Item Sword = new Item { name = "Sword", StatBoost = 15f };
+            Item Gun = new Item { name = "Gun", StatBoost = 30f };
+            Item shoes = new Item { name = "Shoes", StatBoost = 30f };
+
+            WizardItems = new Item[] { wand, Gun };
+            KnightItems = new Item[] { shoes, Sword, Shield};
+
+        }
+
         /// <summary>
         /// Function used to initialize any starting values by default
         /// </summary>
         public void Start()
         {
             _currentScene = 0;
-            _currentEnemyIndex = 0;
+            InitializeEnemies();
+            initializeItems();
 
-            Entity slime = new Entity { Name = "Slime", Attack = 1, Defense = 0, Health = 10 };
-            Entity zombie = new Entity { Name = "Zom-B", Attack = 5, Defense = 2, Health = 15 };
-            Entity human = new Entity { Name = "Uncle Phil", Attack = 10, Defense = 5, Health = 25 };
-            _enemies = new Entity[] { slime, zombie, human };
-
-            _currentEnemy = _enemies[_currentEnemyIndex];
         }
 
         public void InitializeEnemies()
@@ -75,44 +91,29 @@ namespace BattleArena
         /// <param name="option1">The first option the _player can choose</param>
         /// <param name="option2">The second option the _player can choose</param>
         /// <returns></returns>
-        int GetInput(string description, string option1, string option2)
+        int GetInput(string description, params string[] options)
         {
-            string input = "";
-            int inputReceived = 0;
-
-            while (inputReceived != 1 && inputReceived != 2)
-            {//Print options
+            string input;
+            int InputRecieved = -1;
+            while (InputRecieved == -1) ;
+            {
                 Console.WriteLine(description);
-                Console.WriteLine("1. " + option1);
-                Console.WriteLine("2. " + option2);
-                Console.Write("> ");
-
-                //Get input from _player
+                for (int i = 0; i < options.Length; i++)
+                {
+                    Console.WriteLine("[" + (i + 1) + "]" + " " + options[i]);
+                }
+                Console.Write(">");
                 input = Console.ReadLine();
-
-                //If _player selected the first option...
-                if (input == "1" || input == option1)
+                if (int.TryParse(input, out InputRecieved))
                 {
-                    //Set input received to be the first option
-                    inputReceived = 1;
+                    if (InputRecieved <= 0 || InputRecieved > options.Length)
+                    {
+                        InputRecieved = -1;
+                        Console.WriteLine("Invalid Input");
+                        Console.ReadKey(true);
+                    }
                 }
-                //Otherwise if the _player selected the second option...
-                else if (input == "2" || input == option2)
-                {
-                    //Set input received to be the second option
-                    inputReceived = 2;
-                }
-                //If neither are true...
-                else
-                {
-                    //...display error message
-                    Console.WriteLine("Invalid Input");
-                    Console.ReadKey();
-                }
-
-                Console.Clear();
             }
-            return inputReceived;
         }
 
         /// <summary>
@@ -217,7 +218,7 @@ namespace BattleArena
             float DamageDealt = 0f;
             DisplayStats(_player);
             DisplayStats(_currentEnemy);
-            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Dodge");
+            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Equip");
             if(Choice == 1)
             {
                 DamageDealt = _player.AttackEntity(_currentEnemy);
@@ -262,5 +263,7 @@ namespace BattleArena
                 _currentEnemy = _enemies[_currentEnemyIndex];
             }
         }
+
+
     }
 }
