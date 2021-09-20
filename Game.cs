@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace BattleArena
 {
@@ -31,6 +32,17 @@ namespace BattleArena
         private Item[] KnightItems;
         private Item[] WizardItems;
 
+        void Save()
+        {
+            StreamWriter writer = new StreamWriter("Save.txt");
+            _player.Save(writer);
+            _currentEnemy.Save(writer);
+            writer.WriteLine(_currentEnemyIndex);
+            writer.WriteLine(_currentScene);
+            writer.Close();
+        }
+
+
         /// <summary>
         /// Function that starts the main game loop
         /// </summary>
@@ -45,11 +57,11 @@ namespace BattleArena
 
         void initializeItems()
         {
-            Item wand = new Item { name = "Wand", StatBoost = 20f};
-            Item Shield = new Item { name = "Shield", StatBoost = 15f, ItemId = 0};
-            Item Sword = new Item { name = "Sword", StatBoost = 15f, ItemId = 1 };
-            Item Gun = new Item { name = "Gun", StatBoost = 30f, ItemId = 1 };
-            Item shoes = new Item { name = "Shoes", StatBoost = 30f, ItemId = 0 };
+            Item wand = new Item { name = "Wand", StatBoost = 20f, ItemId = ItemType.ATTACK};
+            Item Shield = new Item { name = "Shield", StatBoost = 15f, ItemId = ItemType.DEFENSE };
+            Item Sword = new Item { name = "Sword", StatBoost = 15f, ItemId = ItemType.ATTACK };
+            Item Gun = new Item { name = "Gun", StatBoost = 30f, ItemId = ItemType.ATTACK };
+            Item shoes = new Item { name = "Shoes", StatBoost = 30f, ItemId = ItemType.DEFENSE };
 
             WizardItems = new Item[] { wand, Gun };
             KnightItems = new Item[] { shoes, Sword, Shield};
@@ -261,7 +273,7 @@ namespace BattleArena
             float DamageDealt = 0f;
             DisplayStats(_player);
             DisplayStats(_currentEnemy);
-            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Equip", "Remove Item");
+            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Equip", "Remove Item", "Save");
             if (Choice == 0)
             {
                 DamageDealt = _player.AttackEntity(_currentEnemy);
@@ -270,6 +282,25 @@ namespace BattleArena
             else if (Choice == 1)
             {
                 EquipItemMenu();
+                return;
+            }
+            else if (Choice == 2)
+            {
+                if (_player.UnEquipItem())
+                {
+                    Console.WriteLine("You don't have anything to unequip");
+                }
+                else
+                {
+                    Console.WriteLine("You unequip the item");
+                }
+                Console.ReadKey(true);
+                Console.Clear();
+                return;
+            }
+            else if (Choice == 3)
+            {
+                Save();
                 return;
             }
 
