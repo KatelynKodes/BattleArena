@@ -78,5 +78,26 @@ namespace BattleArena
             writer.WriteLine(Attack);
             writer.WriteLine(Defense);
         }
+
+        public virtual bool Load(StreamReader reader)
+        {
+            if(Name != reader.ReadLine())
+            {
+                return false;
+            }
+            if (!float.TryParse(reader.ReadLine(), out _health))
+            {
+                return false;
+            }
+            if (!float.TryParse(reader.ReadLine(), out _attackPower))
+            {
+                return false;
+            }
+            if (!float.TryParse(reader.ReadLine(), out _defensePower))
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

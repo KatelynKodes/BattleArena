@@ -9,10 +9,19 @@ namespace BattleArena
     {
         public Item[] items;
         public int currentItemIndex;
+        public string Class;
+        private Item CurrItem;
+
         public Item currentItem
         {
-            get { return currentItem; }
-            set { currentItem = value; }
+            get { return CurrItem; }
+            set { CurrItem = value; }
+        }
+
+        public string CurrentJob 
+        {
+            get { return Class; }
+            set { Class = value; }
         }
 
         public override float Attack 
@@ -49,10 +58,16 @@ namespace BattleArena
             return ItemNames;
         }
 
-        public Player(string name, float health, float Attk, float Def, Item[] Inventory) : base(name, health, Attk, Def)
+        public Player() : base()
+        {
+            
+        }
+
+        public Player(string name, float health, float Attk, float Def, Item[] Inventory, string job) : base(name, health, Attk, Def)
         {
             items = Inventory;
-            
+            Class = job;
+            currentItemIndex = -1;
         }
 
         /// <summary>
@@ -84,8 +99,29 @@ namespace BattleArena
 
         public override void Save(StreamWriter writer)
         {
+            writer.WriteLine(CurrentJob);
             base.Save(writer);
             writer.WriteLine(currentItemIndex);
+        }
+
+        public override bool Load(StreamReader reader)
+        {
+            if (!base.Load(reader))
+            {
+                return false;
+            }
+
+            if (!int.TryParse(reader.ReadLine(), out currentItemIndex))
+            {
+                return false;
+            }
+
+            if (!EquipItem(currentItemIndex))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

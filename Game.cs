@@ -12,6 +12,16 @@ namespace BattleArena
         NONE
     }
 
+    public enum Scene
+    {
+        STARTMENU,
+        PLAYERNAME,
+        CHOSEPLAYERCLASS,
+        BATTLE,
+        RESTARTMENU,
+        NONE,
+    }
+
     public struct Item
     {
         public string name;
@@ -24,7 +34,7 @@ namespace BattleArena
     class Game
     {
         private bool _gameOver;
-        private int _currentScene;
+        private Scene _currentScene;
         private Player _player;
         private Entity[] _enemies;
         private int _currentEnemyIndex;
@@ -32,14 +42,41 @@ namespace BattleArena
         private Item[] KnightItems;
         private Item[] WizardItems;
 
+
+        /// Everything has gone wrong here and I'm confused.
         void Save()
         {
             StreamWriter writer = new StreamWriter("Save.txt");
+            writer.WriteLine(_currentEnemyIndex);
             _player.Save(writer);
             _currentEnemy.Save(writer);
-            writer.WriteLine(_currentEnemyIndex);
-            writer.WriteLine(_currentScene);
             writer.Close();
+        }
+
+        ///Everything has gone wrong here and I'm confused.
+        bool Load()
+        {
+            StreamReader reader = new StreamReader("Save.txt");
+            if (!File.Exists("Save.txt"))
+            {
+                return false;
+            }
+            if (_player.Load(reader))
+            {
+                return false;
+            }
+            if (_currentEnemy.Load(reader))
+            {
+                return false;
+            }
+            if (int.TryParse(reader.ReadLine(), out _currentEnemyIndex))
+            {
+                return false;
+            }
+
+            _currentEnemy = _enemies[_currentEnemyIndex];
+            reader.Close();
+            return true;
         }
 
 
@@ -48,9 +85,9 @@ namespace BattleArena
         /// </summary>
         public void Run()
         {
+            Start();
             while (!_gameOver)
             {
-                Start();
                 Update();
             }
         }
@@ -76,7 +113,7 @@ namespace BattleArena
             _currentScene = 0;
             InitializeEnemies();
             initializeItems();
-
+            _player = new Player();
         }
 
         public void InitializeEnemies()
@@ -155,17 +192,20 @@ namespace BattleArena
         {
             switch(_currentScene)
             {
-                case 0:
+                case Scene.STARTMENU:
                     DisplayMainMenu();
                     break;
-                case 1:
+                case Scene.PLAYERNAME:
                     GetPlayerName();
                     break;
-                case 2:
+                case Scene.CHOSEPLAYERCLASS:
+                    CharacterSelection();
+                    break;
+                case Scene.BATTLE:
                     Battle();
                     CheckBattleResults();
                     break;
-                case 3:
+                case Scene.RESTARTMENU:
                     DisplayReplayMenu();
                     break;
             }
@@ -176,7 +216,7 @@ namespace BattleArena
             int PlayAgain = GetInput("Play Again", "Yes", "No");
             if(PlayAgain == 0)
             {
-                _currentScene = 0;
+                _currentScene = Scene.PLAYERNAME;
                 _currentEnemyIndex = 0;
                 _currentEnemy = _enemies[_currentEnemyIndex];
             }
@@ -191,11 +231,18 @@ namespace BattleArena
         /// </summary>
         void DisplayMainMenu()
         {
-            int  PlayGame= GetInput("Play Game", "Yes", "No");
-            if(PlayGame == 0)
+            int  PlayGame= GetInput("Play Game", "New Game", "Load Game");
+            if(PlayGame == 1)
             {
-                _currentScene++;
-            }   
+                _currentScene = Scene.PLAYERNAME;
+            }
+            if (PlayGame == 2)
+            {
+                if (!Load())
+                {
+                    Console.WriteLine("There is no data to load");
+                }
+            }
         }
 
         /// <summary>
@@ -222,21 +269,20 @@ namespace BattleArena
         public void CharacterSelection()
         {
            int CharacterClass = GetInput("Choose your class", "Wizard", "Knight");
-            if(CharacterClass == 0)
+            if(CharacterClass == 1)
             {
+                _player.CurrentJob = "Wizard";
                 _player.Health = 50;
                 _player.Attack = 25;
                 _player.Defense = 5;
-                _currentScene++;
             }
-            else if (CharacterClass == 1)   
+            else if (CharacterClass == 2)   
             {
+                _player.CurrentJob = "Knight";
                 _player.Health = 75;
                 _player.Attack = 15;
                 _player.Attack = 10;
-                _currentScene++;
             }
-
             _currentScene++;
         }
 
@@ -321,14 +367,14 @@ namespace BattleArena
                 Console.WriteLine("You were slain");
                 Console.ReadKey(true);
                 Console.Clear();
-                _currentScene = 3;
+                _currentScene = Scene.RESTARTMENU;
             }
             else if(_currentEnemy.Health <= 0)
             {
                 Console.WriteLine("You slayed the " + _currentEnemy.Name);
                 if(_currentEnemyIndex >= _enemies.Length)
                 {
-                    _currentScene = 3;
+                    _currentScene = Scene.RESTARTMENU;
                     return;
                 }
 
