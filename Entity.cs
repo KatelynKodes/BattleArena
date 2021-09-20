@@ -26,12 +26,12 @@ namespace BattleArena
             get { return _health; }
             set { _health = value; }
         }
-        public float Attack
+        public virtual float Attack
         {
             get { return _attackPower; }
             set { _attackPower = value; }
         }
-        public float Defense
+        public virtual float Defense
         {
             get { return _defensePower; }
             set { _defensePower = value; }

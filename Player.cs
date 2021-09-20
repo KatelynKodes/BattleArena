@@ -8,18 +8,49 @@ namespace BattleArena
     {
         public Item[] items;
         public int currentItemIndex;
-        public int currentItem
+        public Item currentItem
         {
-            get { return currentItemIndex; }
+            get { return currentItem; }
         }
 
-        public Player(string name, float health, float Attk, float Def, Item[] Inventory)
+        public override float Attack 
         {
-            Name = name;
-            Health = health;
-            Attack = Attk;
-            Defense = Def;
+            set
+            {
+                if (currentItem.ItemId == 1)
+                {
+                    base.Attack += currentItem.StatBoost;
+                }
+            }
+        }
+
+        public override float Defense 
+        {
+            set
+            {
+                if (currentItem.ItemId == 0)
+                {
+                    base.Defense += currentItem.StatBoost;
+                }
+            }
+        }
+
+        public string[] GetItemNames()
+        {
+            string[] ItemNames = new string[items.Length];
+
+            for (int i = 0; i < ItemNames.Length; i++)
+            {
+                ItemNames[i] = items[i].name;
+            }
+
+            return ItemNames;
+        }
+
+        public Player(string name, float health, float Attk, float Def, Item[] Inventory) : base(name, health, Attk, Def)
+        {
             items = Inventory;
+            
         }
 
         /// <summary>
@@ -29,7 +60,7 @@ namespace BattleArena
         /// <returns></returns>
         public bool EquipItem(int currentItemValue)
         {
-            if (currentItemValue <= items.Length || currentItem < 0)
+            if (currentItemValue <= items.Length || currentItemIndex < 0)
             {
                 return false;
             }
@@ -41,7 +72,7 @@ namespace BattleArena
 
         public bool UnEquipItem()
         {
-            if (currentItem.Name == "nothing")
+            if (currentItem.name == "nothing")
             {
                 return false;
             }

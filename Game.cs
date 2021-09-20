@@ -4,11 +4,19 @@ using System.Text;
 
 namespace BattleArena
 {
+    public enum ItemType
+    {
+        DEFENSE,
+        ATTACK,
+        NONE
+    }
 
     public struct Item
     {
         public string name;
         public float StatBoost;
+        public ItemType ItemId;
+
     }
 
     //TEST COMMIT
@@ -28,15 +36,20 @@ namespace BattleArena
         /// </summary>
         public void Run()
         {
+            while (!_gameOver)
+            {
+                Start();
+                Update();
+            }
         }
 
         void initializeItems()
         {
             Item wand = new Item { name = "Wand", StatBoost = 20f};
-            Item Shield = new Item { name = "Shield", StatBoost = 15f};
-            Item Sword = new Item { name = "Sword", StatBoost = 15f };
-            Item Gun = new Item { name = "Gun", StatBoost = 30f };
-            Item shoes = new Item { name = "Shoes", StatBoost = 30f };
+            Item Shield = new Item { name = "Shield", StatBoost = 15f, ItemId = 0};
+            Item Sword = new Item { name = "Sword", StatBoost = 15f, ItemId = 1 };
+            Item Gun = new Item { name = "Gun", StatBoost = 30f, ItemId = 1 };
+            Item shoes = new Item { name = "Shoes", StatBoost = 30f, ItemId = 0 };
 
             WizardItems = new Item[] { wand, Gun };
             KnightItems = new Item[] { shoes, Sword, Shield};
@@ -95,7 +108,7 @@ namespace BattleArena
         {
             string input;
             int InputRecieved = -1;
-            while (InputRecieved == -1) ;
+            while (InputRecieved == -1)
             {
                 Console.WriteLine(description);
                 for (int i = 0; i < options.Length; i++)
@@ -113,13 +126,20 @@ namespace BattleArena
                         Console.ReadKey(true);
                     }
                 }
+                else
+                {
+                    InputRecieved = -1;
+                    Console.WriteLine("Invalid Input");
+                    Console.ReadKey(true);
+                }
             }
+            return InputRecieved;
         }
 
         /// <summary>
         /// Calls the appropriate function(s) based on the current scene index
         /// </summary>
-        void DisplayCurrentScene()
+        public void DisplayCurrentScene()
         {
             switch(_currentScene)
             {
@@ -134,18 +154,15 @@ namespace BattleArena
                     CheckBattleResults();
                     break;
                 case 3:
-                    DisplayMainMenu();
+                    DisplayReplayMenu();
                     break;
             }
         }
 
-        /// <summary>
-        /// Displays the menu that allows the _player to start or quit the game
-        /// </summary>
-        void DisplayMainMenu()
+        void DisplayReplayMenu()
         {
             int PlayAgain = GetInput("Play Again", "Yes", "No");
-            if(PlayAgain == 1)
+            if(PlayAgain == 0)
             {
                 _currentScene = 0;
                 _currentEnemyIndex = 0;
@@ -154,6 +171,18 @@ namespace BattleArena
             else
             {
                 _gameOver = true;
+            }
+        }
+
+        /// <summary>
+        /// Displays the menu that allows the _player to start or quit the game
+        /// </summary>
+        void DisplayMainMenu()
+        {
+            int  PlayGame= GetInput("Play Game", "Yes", "No");
+            if(PlayGame == 0)
+            {
+                _currentScene++;
             }   
         }
 
@@ -181,14 +210,14 @@ namespace BattleArena
         public void CharacterSelection()
         {
            int CharacterClass = GetInput("Choose your class", "Wizard", "Knight");
-            if(CharacterClass == 1)
+            if(CharacterClass == 0)
             {
                 _player.Health = 50;
                 _player.Attack = 25;
                 _player.Defense = 5;
                 _currentScene++;
             }
-            else if (CharacterClass == 2)   
+            else if (CharacterClass == 1)   
             {
                 _player.Health = 75;
                 _player.Attack = 15;
@@ -210,6 +239,20 @@ namespace BattleArena
 
         }
 
+        public void EquipItemMenu()
+        {
+            int ItemNum = GetInput("Which Item would you like to equip?", _player.GetItemNames());
+
+            if (_player.EquipItem(ItemNum))
+            {
+                Console.WriteLine("You equipped " + _player.currentItem.name + ".");
+            }
+            else
+            {
+                Console.WriteLine("You equipped Nothing!");
+            }
+        }
+
         /// <summary>
         /// Simulates one turn in the current monster fight
         /// </summary>
@@ -218,17 +261,15 @@ namespace BattleArena
             float DamageDealt = 0f;
             DisplayStats(_player);
             DisplayStats(_currentEnemy);
-            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Equip");
-            if(Choice == 1)
+            int Choice = GetInput("A " + _currentEnemy + " Approaches you", "Attack", "Equip", "Remove Item");
+            if (Choice == 0)
             {
                 DamageDealt = _player.AttackEntity(_currentEnemy);
                 Console.WriteLine("You did " + DamageDealt + " damage");
             }
-            else if (Choice == 2)
+            else if (Choice == 1)
             {
-                Console.WriteLine("You dodged the " + _currentEnemy + "'s attack");
-                Console.ReadKey(true);
-                Console.Clear();
+                EquipItemMenu();
                 return;
             }
 
@@ -264,6 +305,33 @@ namespace BattleArena
             }
         }
 
+
+        //Lodis Exercise 9/20/21
+        public int[] AddToArray(int[] ArrayToAdd, int numtoAdd)
+        {
+            //Makes a new array that's one space longer than ArrayToAdd
+            int[] NewArray = new int[ArrayToAdd.Length + 1];
+
+
+            //Loops through the ArrayToAdd length and sets new array's values to the ones of
+            //The old array
+            for (int i = 0; i < ArrayToAdd.Length; i++)
+            {
+                NewArray[i] = ArrayToAdd[i];
+            }
+
+            //Sets the last value to numtoAdd
+            NewArray[NewArray.Length - 1] = numtoAdd;
+
+            //prints the array
+            foreach (int num in NewArray)
+            {
+                Console.Write(num + " ");
+            }
+
+            return NewArray;
+            
+        }
 
     }
 }
